@@ -36,7 +36,7 @@ def load_scf_panel(path: Path = SCF_PANEL_FILE) -> pd.DataFrame:
     # Solo quien tenía acciones o fondos en 2007 podía salir de ellos.
     holders = raw[raw["DEQ07"] > 0]
 
-    # Creamos la tabla final con las variables que necesitamos y los tipos correctos acordes con los nombres de la tabla de Japón.
+    # Tabla final: mismos nombres de columnas y tipos que la tabla de Japón.
     return pd.DataFrame({
         "family_id": holders["YY1"].astype(int),
         "implicate": (holders["Y1"] % 10).astype(int),
