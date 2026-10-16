@@ -15,6 +15,16 @@ from bolsalab.config import SCF_PANEL_FILE
 
 COMMON_FEATURES = ["age", "university", "married", "has_children", "employed"]
 
+# Columnas que leemos del archivo de la Reserva Federal (07 = 2007, 09 = 2009):
+#   YY1       número de la familia
+#   Y1        número de la familia + versión de la imputación (último dígito, 1 a 5)
+#   WGT09     peso de la familia en la encuesta
+#   DEQ       dinero en acciones y fondos
+#   AGE       edad de quien encabeza el hogar
+#   EDCL      educación en 4 niveles (4 = título universitario)
+#   MARRIED   1 = casado o vive en pareja, 2 = no
+#   KIDS      número de hijos que viven en el hogar
+#   OCCAT1    ocupación (1 = empleado, 2 = por cuenta propia, 3 y 4 = no trabaja)
 RAW_COLUMNS = ["YY1", "Y1", "WGT09", "DEQ07", "DEQ09",
                "AGE07", "EDCL07", "MARRIED07", "KIDS07", "OCCAT107"]
 
