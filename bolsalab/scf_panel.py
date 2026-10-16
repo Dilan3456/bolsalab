@@ -4,7 +4,7 @@ Deja una fila por familia y por imputación (la Reserva Federal publica 5 versio
 de cada familia). Solo entran las familias que tenían acciones o fondos en 2007.
 Las variables de entrada usan los mismos nombres que la tabla de Japón.
 
-Uso: python -m bolsalab.scf_panel
+Uso: uv run python -m bolsalab.scf_panel
 """
 
 from pathlib import Path
