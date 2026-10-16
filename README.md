@@ -115,7 +115,7 @@ uv sync
 cp .env.example .env
 ```
 
-Los datos no se versionan. Cada integrante los descarga de su fuente y los guarda en `data/external/crash/`:
+Los datos no se versionan. Cada integrante los descarga de su fuente y los guarda en `data/external/crash/`. En [`docs/datos.md`](docs/datos.md) está para qué usamos cada dataset, de dónde se baja y qué permiten sus términos. Los dos principales:
 
 - **Japón:** archivo S1 del artículo de Bawalle, Khan y Kadoya (2025) en PLOS ONE, https://doi.org/10.1371/journal.pone.0315622
 - **Panel SCF 2007-2009:** Reserva Federal de EE. UU., https://www.federalreserve.gov/econres/scf_2009p.htm
