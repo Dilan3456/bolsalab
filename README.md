@@ -1,89 +1,136 @@
 # BolsaLAB
 
-Copiloto educativo de inversión con IA explicable para inversionistas principiantes en Colombia. Proyecto de la Especialización en IA, Pontificia Universidad Javeriana (Grupo 10).
+Copiloto educativo de inversión para principiantes en Colombia. Proyecto de la Especialización en IA, Pontificia Universidad Javeriana (Grupo 10).
 
-BolsaLAB construye un portafolio según el perfil de riesgo real de la persona y le muestra **primero cuánto puede perder** antes de decirle cuánto podría ganar.
+BolsaLAB estima **qué tan propensa es una persona a vender sus inversiones durante una caída del mercado**. Lo hace con un modelo entrenado desde cero sobre una encuesta real a 54.704 inversionistas japoneses que vivieron la caída de marzo de 2020.
 
-- **Pérdidas primero:** la peor caída histórica, en pesos, antes que cualquier rentabilidad.
-- **Español claro:** cada decisión se explica sin jerga financiera.
-- **Simulador de caída:** la persona vive una crisis real y se compara lo que hace con lo que dijo que haría.
-- **Nunca recomienda activos:** cuando la pregunta es de asesoría regulada, remite a una firma vigilada por la Superintendencia Financiera.
+> Prototipo académico. No constituye asesoría de inversión y nunca recomienda comprar o vender un activo.
 
-> Prototipo académico. No constituye asesoría de inversión.
+## Qué hace la app
+
+1. **Pregunta.** La persona responde unas 14 preguntas: edad, educación, situación familiar, ingreso, tres preguntas de conocimiento financiero y cómo se ve a sí misma frente al riesgo. Cada pregunta corresponde a una columna del dataset de entrenamiento.
+2. **Consulta el modelo.** El frontend envía las respuestas a la API, que llama al modelo y devuelve el resultado.
+3. **Muestra el resultado.** La persona ve si es más, igual o menos propensa a vender que el promedio, y las respuestas que más pesaron. La app no muestra un porcentaje personal: el modelo se entrenó en Japón y ese número no sería confiable en Colombia.
+
+## El modelo
+
+| | |
+|---|---|
+| Datos de entrenamiento | Encuesta de Bawalle, Khan y Kadoya (2025), PLOS ONE: clientes de un corredor en línea de Japón |
+| Población | Personas que en marzo de 2020 vendieron todo, vendieron parte o mantuvieron sus inversiones (54.704) |
+| Variable objetivo | `sold`: 1 si vendió todo o parte (19,87 %), 0 si mantuvo |
+| Modelos que comparamos | Trivial, regresión logística, Random Forest, XGBoost, LightGBM, CatBoost y una red neuronal pequeña |
+| Contraste fuera de Japón | Panel de la Survey of Consumer Finances 2007-2009 (Reserva Federal de EE. UU.) |
+
+Las reglas para preparar los datos, partirlos, medir y elegir el modelo están en [`docs/protocolo-evaluacion.md`](docs/protocolo-evaluacion.md). Cada regla cita el artículo que la respalda.
+
+## La API
+
+El backend expone un endpoint. Los nombres de la ruta y de los campos son una propuesta del equipo.
+
+```
+POST /api/v1/crash-reaction/predict
+```
+
+Recibe las respuestas del cuestionario:
+
+```json
+{
+  "age": 27,
+  "gender": "female",
+  "university": false,
+  "married": false,
+  "has_children": false,
+  "urban": true,
+  "employed": true,
+  "income_bracket": 3,
+  "assets_bracket": 1,
+  "knowledge": { "interest": "correct", "inflation": "dont_know", "diversification": "correct" },
+  "knowledge_confidence": 4,
+  "risk_aversion": 3,
+  "short_term_view": 4
+}
+```
+
+Devuelve la categoría y lo que la explica:
+
+```json
+{
+  "model_version": "crash_reaction_v1",
+  "probability": 0.231,
+  "base_rate": 0.1987,
+  "relative_to_average": 1.16,
+  "category": "similar",
+  "top_factors": [
+    { "feature": "financial_literacy", "direction": "increases", "label": "Acertó 2 de 3 preguntas de conocimiento" }
+  ],
+  "in_training_range": true,
+  "warnings": ["assets_at_lowest_training_bracket"]
+}
+```
+
+`probability` es de uso interno; la pantalla muestra `category` (`more_likely`, `similar` o `less_likely`), los factores y los avisos.
 
 ## Cómo está organizado el repositorio
 
-La estructura sigue la plantilla estándar [Cookiecutter Data Science v2](https://cookiecutter-data-science.drivendata.org/). La elegimos porque:
-
-- **Separa los datos del código.** Los datos se regeneran con el pipeline y nunca se suben a git.
-- **Separa la exploración de la producción.** Los notebooks sirven para explorar y documentar. El código reutilizable vive en el paquete `bolsalab/`, que es lo que importa el backend.
-- **Cualquiera se ubica rápido.** Es la convención más usada en proyectos de ML en Python.
+Seguimos la plantilla [Cookiecutter Data Science v2](https://cookiecutter-data-science.drivendata.org/): separa los datos del código y la exploración de la producción.
 
 ```
 bolsalab/
-├── bolsalab/              ← Paquete Python con el pipeline de ML (lo que importa el backend)
-│   ├── config.py          ← Rutas, activos, fuentes y semillas. Todo parámetro sale de aquí
-│   ├── dataset.py         ← Etapas 1-2: descarga y limpieza de datos
-│   ├── features.py        ← Etapa 3: feature engineering y datasets de entrenamiento
+├── bolsalab/              ← Paquete Python con el pipeline de ML
+│   ├── config.py          ← Rutas y semilla. Todo parámetro sale de aquí
+│   ├── dataset.py         ← Carga y limpieza del dataset de Japón
+│   ├── features.py        ← Variables de entrada y variable objetivo
 │   ├── modeling/
-│   │   ├── train.py       ← Etapas 4-5: comparar modelos, elegir y exportar
+│   │   ├── train.py       ← Entrenar, comparar y exportar el modelo
 │   │   └── predict.py     ← Cargar el modelo publicado y predecir
 │   └── plots.py           ← Gráficas reutilizables
-├── data/                  ← NO se versiona (ver .gitignore)
-│   ├── raw/               ← Descargas automáticas, tal cual llegan de la fuente
-│   ├── external/          ← Descargas manuales (COLCAP de la BVC, encuestas SCF e IEFIC)
-│   ├── interim/           ← Una tabla limpia por fuente
+├── data/                  ← NO se versiona
+│   ├── external/crash/    ← Datasets descargados a mano (Japón, panel SCF y otros)
+│   ├── interim/           ← Tablas limpias
 │   └── processed/         ← Datasets finales para entrenar
-├── models/                ← Modelos publicados (.joblib) + su metadata (.json)
-├── notebooks/             ← Exploración y comparación de modelos
-├── references/            ← Diccionario de datos, fuentes y licencias
+├── docs/                  ← Protocolo de evaluación, comandos de uv y entregables
+├── models/                ← Modelos publicados (.joblib) y su metadata
+├── notebooks/             ← Exploración y análisis
 ├── reports/figures/       ← Gráficas para entregas y sustentación
 ├── tests/                 ← Pruebas del paquete
 ├── backend/               ← API en FastAPI que expone el modelo
-├── frontend/              ← Aplicación web
-│   └── prototypes/        ← Prototipos HTML v1 y v2 validados con usuarios (Design Thinking)
-├── pyproject.toml         ← Hace instalable el paquete bolsalab (pip install -e .)
-├── requirements.txt
-├── Makefile               ← Atajos: make data / make features / make train
-└── .env.example           ← Variables de entorno necesarias (copiar a .env)
+└── frontend/prototypes/   ← Prototipos HTML validados con usuarios
 ```
 
 ## Cómo fluye el trabajo
 
-Cada carpeta corresponde a una etapa. Los datos avanzan de izquierda a derecha:
-
 ```
-Fuentes ──► data/raw ──► data/interim ──► data/processed ──► models/ ──► backend/ ──► frontend/
-            descarga      limpieza          features y         modelo      API          interfaz
-                                            datasets           elegido     FastAPI      web
+data/external ──► data/interim ──► data/processed ──► models/ ──► backend/ ──► frontend/
+  dataset de        limpieza         variables y        modelo      API         app
+  Japón                              objetivo           elegido     FastAPI
 ```
-
-| Etapa | Qué se hace | Dónde |
-|---|---|---|
-| 1. Obtención | Descargar precios, macro y encuestas | `bolsalab/dataset.py` → `data/raw`, `data/external` |
-| 2. Limpieza | Festivos, tickers renombrados, calendario BVC, fechas de publicación | `bolsalab/dataset.py` → `data/interim` |
-| 3. Features | Construir el dataset de perfil y el de mercado | `bolsalab/features.py` → `data/processed` |
-| 4. Modelado | Entrenar y comparar candidatos, elegir el mejor | `notebooks/` + `bolsalab/modeling/train.py` |
-| 5. Publicación | Exportar el modelo ganador a `.joblib` + metadata | `models/` |
-| 6. API | Exponer el modelo con FastAPI | `backend/` |
-| 7. Interfaz | Consumir la API desde la web | `frontend/` |
 
 ## Primeros pasos
 
 ```bash
 git clone git@github.com:EspecializacionIA1/bolsalab.git
 cd bolsalab
-python -m venv .venv
-.venv\Scripts\activate          # Windows  |  source .venv/bin/activate en Linux/Mac
-pip install -r requirements.txt
-cp .env.example .env            # y completar los valores
+uv sync
+cp .env.example .env
 ```
 
-Luego se ejecuta el pipeline por etapas: `make data`, `make features`, `make train`. Si `make` no está disponible en Windows, cada objetivo del `Makefile` indica el comando de Python equivalente.
+Los datos no se versionan. Cada integrante los descarga de su fuente y los guarda en `data/external/crash/`:
+
+- **Japón:** archivo S1 del artículo de Bawalle, Khan y Kadoya (2025) en PLOS ONE, https://doi.org/10.1371/journal.pone.0315622
+- **Panel SCF 2007-2009:** Reserva Federal de EE. UU., https://www.federalreserve.gov/econres/scf_2009p.htm
+
+Los comandos de uso diario están en [`docs/uv-commands.md`](docs/uv-commands.md).
 
 ## Convenciones del equipo
 
-- **Ramas:** nadie hace push directo a `main`. Se trabaja en `feature/<descripcion>` y se integra por Pull Request con al menos una aprobación.
-- **Notebooks:** se nombran `<orden>-<iniciales>-<descripcion>.ipynb`, por ejemplo `3.0-jga-comparacion-modelos.ipynb`. Si un notebook produce código que se va a reutilizar, ese código pasa a `bolsalab/`.
-- **Datos:** no se suben a git. Cualquiera los regenera ejecutando el pipeline. Las descargas manuales se documentan en `references/`.
-- **Parámetros:** rutas, tickers y fechas se leen de `bolsalab/config.py`, nunca se escriben a mano en un notebook.
+- **Ramas:** nadie hace push directo a `main`. Cada tarea va en `feature/<descripcion>` y entra por Pull Request con al menos una aprobación.
+- **Notebooks:** se nombran `<orden>-<iniciales>-<descripcion>.ipynb`, por ejemplo `3.0-jga-comparacion-modelos.ipynb`. El código que se reutiliza pasa a `bolsalab/`.
+- **Datos:** no se suben a git. Los de la NFCS tampoco se comparten entre integrantes: sus términos lo prohíben.
+- **Parámetros:** rutas y semillas se leen de `bolsalab/config.py`.
+
+## Si el tiempo alcanza
+
+- **Ruta de aprendizaje:** módulos cortos según las respuestas que más pesaron en el resultado.
+- **Simulador de caída:** vivir la caída con una cartera de ejemplo y registrar qué decide la persona.
+- **Librerías:** `optuna` (búsqueda de hiperparámetros) y `riskfolio-lib` (carteras de ejemplo) se pueden agregar si se llegan a necesitar.
