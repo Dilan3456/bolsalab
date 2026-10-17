@@ -2,7 +2,7 @@
 
 BolsaLAB · Grupo 10 · Responsable: Juan Gilberto Ayala (Test Designer) · Versión 0.1, 15 de octubre de 2026
 
-Fijamos estas reglas antes de entrenar. Así los cuatro integrantes comparan sus modelos en igualdad de condiciones y nadie elige el ganador después de ver los resultados. Cada sección dice la regla, su razón con el respaldo que tiene y, si aplica, sus límites. Cuando una regla es decisión nuestra y no viene de un artículo, lo decimos; podemos cambiarla, pero solo antes de entrenar y dejando registro.
+Fijamos estas reglas antes de entrenar. Así como integrantes del equipo comparamos los modelos en igualdad de condiciones y nadie elige el ganador después de ver los resultados. Cada sección dice la regla, su razón con el respaldo que tiene y, si aplica, sus límites. Cuando una regla es decisión nuestra y no viene de un artículo, lo decimos; podemos cambiarla, pero solo antes de entrenar y dejando registro.
 
 ## 1. Con quién entrenamos y qué predecimos
 

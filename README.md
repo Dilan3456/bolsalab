@@ -22,7 +22,7 @@ BolsaLAB estima **qué tan propensa es una persona a vender sus inversiones dura
 | Modelos que comparamos | Trivial, regresión logística, Random Forest, XGBoost, LightGBM, CatBoost y una red neuronal pequeña |
 | Contraste fuera de Japón | Panel de la Survey of Consumer Finances 2007-2009 (Reserva Federal de EE. UU.) |
 
-Las reglas para preparar los datos, partirlos, medir y elegir el modelo están en [`docs/protocolo-evaluacion.md`](docs/protocolo-evaluacion.md). Cada regla cita el artículo que la respalda.
+Las reglas para preparar los datos, partirlos, medir y elegir el modelo están en [`docs/protocolo-evaluacion.md`](docs/protocolo-evaluacion.md). Cada regla cita el artículo que la respalda. Las variables que usa el modelo, y las que no, están en [`docs/variables.md`](docs/variables.md).
 
 ## La API
 
