@@ -1,10 +1,10 @@
 """Pruebas de la carga del dataset de Japón. Los valores esperados están en
-docs/protocolo-evaluacion.md (sección 2) y docs/datos.md."""
+docs/protocolo-evaluacion.md (sección 2) y docs/datos.md. Los datos se cargan en conftest.py."""
 
 import pytest
 
 from bolsalab.config import JAPAN_SURVEY_FILE
-from bolsalab.dataset import BEHAVIOR_COLUMNS, load_japan_survey, select_investors
+from bolsalab.dataset import BEHAVIOR_COLUMNS
 
 pytestmark = pytest.mark.skipif(
     not JAPAN_SURVEY_FILE.exists(),
@@ -13,18 +13,6 @@ pytestmark = pytest.mark.skipif(
 
 BINARY_COLUMNS = ["Interest_Score", "Inflation_Score", "Diversification_Score",
                   "Gender", "Uni_Educ", "Married", "Childreen", "Urban_Dummey", "Employment"]
-
-
-@pytest.fixture(scope="module")
-def survey():
-    """Lee el Excel una sola vez para todas las pruebas (tarda unos 35 segundos)."""
-    return load_japan_survey()
-
-
-@pytest.fixture(scope="module")
-def investors(survey):
-    """Las personas que vendieron todo, vendieron parte o mantuvieron."""
-    return select_investors(survey)
 
 
 def test_file_size(survey):
